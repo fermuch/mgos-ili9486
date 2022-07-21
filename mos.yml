@@ -1,0 +1,32 @@
+author: fermuch
+description: ILI9486 (or ST7796) driver for Mongoose OS
+version: 1.0
+
+libs_version: ${mos.version}
+modules_version: ${mos.version}
+mongoose_os_version: ${mos.version}
+
+tags:
+  - ili9486
+  - st7796
+  - video
+  - spi
+  - driver
+
+sources:
+  - src
+
+libs:
+  - origin: https://github.com/mongoose-os-libs/spi
+
+config_schema:
+  - ["ili9486", "o", {title: "ILI9486 settings"}]
+  - ["ili9486.cs_index", "i", 0, {title: "spi.cs*_gpio index, 0, 1 or 2"}]
+  - ["ili9486.spi_freq", "i", 20000000, {title: "SPI frequency"}]
+  - ["ili9486.dc_pin", "i", 33, {title: "TFT DC pin"}]
+  - ["ili9486.rst_pin", "i", -1, {title: "RST pin. If set, will be used to reinit the display."}]
+  - ["ili9486.width", "i", 320, {title: "TFT width in pixels"}]
+  - ["ili9486.height", "i", 480, {title: "TFT height in pixels"}]
+
+# Used by the mos tool to catch mos binaries incompatible with this file format
+manifest_version: 2017-09-29
