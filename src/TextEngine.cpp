@@ -334,7 +334,7 @@ void TextEngine::_DoUpdateScreen(uint16_t addr, uint16_t nb) {
 
                     char c = tmpBuf[i];
 
-                    unsigned char code = pgm_read_byte(c_font + c + (line * 256));
+                    unsigned char code = c_font[c + (line * 256)];
 
                     uint16_t bg = _getScreenBGColor( (syncPos+syncOffset+i) * (_colorSize+1) );
                     uint16_t fg = _getScreenFGColor( (syncPos+syncOffset+i) * (_colorSize+1) );
@@ -385,7 +385,7 @@ void TextEngine::_DoUpdateScreen(uint16_t addr, uint16_t nb) {
 
                     char c = tmpBuf[i];
 
-                    unsigned char code = pgm_read_byte(c_font + c + (line * 256));
+                    unsigned char code = c_font[c + (line * 256)];
 
                     uint16_t bg = _getScreenBGColor( (syncPos+syncOffset+i) * (_colorSize+1) );
                     uint16_t fg = _getScreenFGColor( (syncPos+syncOffset+i) * (_colorSize+1) );
@@ -556,13 +556,9 @@ void TextEngine::DoUpdate(uint32_t delay) {
 ============================================================================ */
 
 void TextEngine::poke(uint16_t addr, uint8_t val) {
-
-
-    Serial.printf("Poke IN :[%d]=%d :: ScreenSize = %d ::>>",addr,val,_ScreenSize);
     if(addr >= _ScreenSize) return;
 
     Screen[addr] = val;
-    Serial.println("Poke >> _DoUpdateScreen");
     _DoUpdateScreen(addr,1);    
 }
 
