@@ -22,11 +22,13 @@ includes:
 
 libs:
   - origin: https://github.com/mongoose-os-libs/spi
+  - origin: https://github.com/mongoose-os-libs/arduino-compat
+  - origin: https://github.com/mongoose-os-libs/arduino-spi
 
 config_schema:
   - ["ili9486", "o", {title: "ILI9486 settings"}]
   - ["ili9486.cs_index", "i", 0, {title: "spi.cs*_gpio index, 0, 1 or 2"}]
-  - ["ili9486.spi_freq", "i", 20000000, {title: "SPI frequency"}]
+  - ["ili9486.spi_freq", "i", 60000000, {title: "SPI frequency"}]
   - ["ili9486.dc_pin", "i", 33, {title: "TFT DC pin"}]
   - ["ili9486.rst_pin", "i", -1, {title: "RST pin. If set, will be used to reinit the display."}]
   - ["ili9486.bl_pin", "i", -1, {title: "Backlight pin"}]
