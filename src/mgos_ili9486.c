@@ -4,6 +4,7 @@
 
 #include "mgos_spi.h"
 #include "mgos_gpio.h"
+#include "mgos_pwm.h"
 
 #define ILI9486_SLEEP 0x80
 #define SPI_MODE 0
@@ -73,6 +74,16 @@ static void ili9486_send_commands(const uint8_t *addr) {
       mgos_msleep(delay);
     }
   }
+}
+
+void ili9486_set_brigthness(uint8_t level) {
+  if (mgos_sys_config_get_ili9486_bl_pin() == -1) {
+    LOG(LL_WARN, ("Backlight not enabled! Please set ili9486.bl_pin"));
+    return;
+  }
+
+  if (level > 100) level = 100;
+  mgos_pwm_set(mgos_sys_config_get_ili9486_bl_pin(), 1000, (level * 1024) / 100);
 }
 
 bool mgos_mgos_ili9486_init(void) {

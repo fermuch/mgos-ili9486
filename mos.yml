@@ -19,6 +19,7 @@ sources:
 
 libs:
   - origin: https://github.com/mongoose-os-libs/spi
+  - origin: https://github.com/mongoose-os-libs/pwm
 
 config_schema:
   - ["ili9486", "o", {title: "ILI9486 settings"}]
@@ -26,6 +27,7 @@ config_schema:
   - ["ili9486.spi_freq", "i", 20000000, {title: "SPI frequency"}]
   - ["ili9486.dc_pin", "i", 33, {title: "TFT DC pin"}]
   - ["ili9486.rst_pin", "i", -1, {title: "RST pin. If set, will be used to reinit the display."}]
+  - ["ili9486.bl_pin", "i", -1, {title: "Backlight pin"}]
   - ["ili9486.width", "i", 320, {title: "TFT width in pixels"}]
   - ["ili9486.height", "i", 480, {title: "TFT height in pixels"}]
 
