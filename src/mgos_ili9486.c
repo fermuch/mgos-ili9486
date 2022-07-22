@@ -75,7 +75,7 @@ static void ili9486_send_commands(const uint8_t *addr) {
   }
 }
 
-bool mgos_ili9486_init(void) {
+bool mgos_mgos_ili9486_init(void) {
   // set up DC pin
   mgos_gpio_write(mgos_sys_config_get_ili9486_dc_pin(), 0);
   mgos_gpio_set_mode(mgos_sys_config_get_ili9486_dc_pin(), MGOS_GPIO_MODE_OUTPUT);
