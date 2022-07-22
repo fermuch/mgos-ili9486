@@ -33,5 +33,17 @@ config_schema:
   - ["ili9486.width", "i", 320, {title: "TFT width in pixels"}]
   - ["ili9486.height", "i", 480, {title: "TFT height in pixels"}]
 
+conds:
+  - when: mos.platform == "esp32"
+    apply:
+      build_vars:
+        ESP_IDF_EXTRA_COMPONENTS: >
+          ${build_vars.ESP_IDF_EXTRA_COMPONENTS}
+          esp_adc_cal
+      config_schema:
+        # https://esp-idf.readthedocs.io/en/latest/api-reference/peripherals/adc.html#adc-calibration
+        - ["sys.esp32_adc_vref", "i", 0, {title: "ADC Vref, in mV"}]
+        - ["sys.esp32_adc_width", "i", 3, {title: "ADC width, see ESP32 IDF"}]
+
 # Used by the mos tool to catch mos binaries incompatible with this file format
 manifest_version: 2017-09-29
