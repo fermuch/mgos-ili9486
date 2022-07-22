@@ -831,7 +831,7 @@ void ILI9486_SPI_ESP32::writeCommand(uint8_t c)
 	CS_OFF();
 }
 
-
+extern "C"
 bool mgos_mgos_ili9486_init(void) {
   // set up DC pin
   mgos_gpio_write(mgos_sys_config_get_ili9486_dc_pin(), 0);
