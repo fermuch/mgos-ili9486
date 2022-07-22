@@ -4,9 +4,11 @@
 
 #include "mgos_spi.h"
 #include "mgos_gpio.h"
-#include "mgos_pwm.h"
 
 #define ILI9486_SLEEP 0x80
+#define RAMWR 0x2C
+#define CASET 0x2A
+#define PASET 0x2B
 #define SPI_MODE 0
 
 static uint8_t initialization_sequence[] = {
@@ -76,14 +78,49 @@ static void ili9486_send_commands(const uint8_t *addr) {
   }
 }
 
-void ili9486_set_brigthness(uint8_t level) {
-  if (mgos_sys_config_get_ili9486_bl_pin() == -1) {
-    LOG(LL_WARN, ("Backlight not enabled! Please set ili9486.bl_pin"));
+static void ili9486_spi_write8_cmd(uint8_t byte) {
+  // Command has DC low and CS low while writing to SPI bus.
+  mgos_gpio_write(mgos_sys_config_get_ili9486_dc_pin(), 0);
+  ili9486_spi_write(&byte, 1);
+}
+
+static void ili9486_spi_write8(uint8_t byte) {
+  // Data has DC high and CS low while writing to SPI bus.
+  mgos_gpio_write(mgos_sys_config_get_ili9486_dc_pin(), 1);
+  ili9486_spi_write(&byte, 1);
+}
+
+static void ili9486_set_clip(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
+  ili9486_spi_write8_cmd(CASET); // Column addr set
+  ili9486_spi_write8(x0 >> 8);
+  ili9486_spi_write8(x0 & 0xFF);         // XSTART
+  ili9486_spi_write8(x1 >> 8);
+  ili9486_spi_write8(x1 & 0xFF);         // XEND
+  ili9486_spi_write8_cmd(PASET); // Row addr set
+  ili9486_spi_write8(y0 >> 8);
+  ili9486_spi_write8(y0);                // YSTART
+  ili9486_spi_write8(y1 >> 8);
+  ili9486_spi_write8(y1);                // YEND
+  ili9486_spi_write8_cmd(RAMWR); // write to RAM
+  return;
+}
+
+// buf represents a 16-bit RGB 565 uint16_t color buffer of length buflen bytes (so buflen/2 pixels).
+// Note: data in 'buf' has to be in network byte order!
+void ili9486_send_pixels(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint8_t *buf, uint32_t buflen) {
+  uint16_t winsize = (x1 - x0 + 1) * (y1 - y0 + 1);
+
+  if (buflen != winsize * 2) {
+    LOG(LL_ERROR, ("Want buflen(%d), to be twice the window size(%d)", (int)buflen, winsize));
     return;
   }
 
-  if (level > 100) level = 100;
-  mgos_pwm_set(mgos_sys_config_get_ili9486_bl_pin(), 1000, (level * 1024) / 100);
+  winsize = (x1 - x0 + 1) * (y1 - y0 + 1);
+
+  ili9486_set_clip(x0, y0, x1, y1);
+  ili9486_spi_write8_cmd(RAMWR);
+  mgos_gpio_write(mgos_sys_config_get_ili9486_dc_pin(), 1);
+  ili9486_spi_write(buf, winsize * 2);
 }
 
 bool mgos_mgos_ili9486_init(void) {
@@ -97,17 +134,21 @@ bool mgos_mgos_ili9486_init(void) {
                 mgos_sys_config_get_ili9486_rst_pin(),
                 SPI_MODE, mgos_sys_config_get_ili9486_spi_freq()));
 
-  if (mgos_sys_config_get_ili9486_rst_pin() >= 0) {
-    // Issue a 20uS negative pulse on the reset pin and wait 5 mS so interface gets ready.
-    mgos_gpio_write(mgos_sys_config_get_ili9486_rst_pin(), 1);
+  if (mgos_sys_config_get_ili9486_rst_pin() != -1) {
     mgos_gpio_set_mode(mgos_sys_config_get_ili9486_rst_pin(), MGOS_GPIO_MODE_OUTPUT);
+    mgos_gpio_write(mgos_sys_config_get_ili9486_rst_pin(), 1);
+    // Issue a 20uS negative pulse on the reset pin and wait so interface gets ready.
     mgos_usleep(1000);
     mgos_gpio_write(mgos_sys_config_get_ili9486_rst_pin(), 0);
     mgos_usleep(20);
     mgos_gpio_write(mgos_sys_config_get_ili9486_rst_pin(), 1);
+    mgos_usleep(20);
   }
 
-  // TODO: add backlight control
+  if (mgos_sys_config_get_ili9486_bl_pin() != -1) {
+    mgos_gpio_set_mode(mgos_sys_config_get_ili9486_bl_pin(), MGOS_GPIO_MODE_OUTPUT);
+    mgos_gpio_write(mgos_sys_config_get_ili9486_bl_pin(), 1);
+  }
 
   ili9486_send_commands(initialization_sequence);
 

@@ -1,6 +1,7 @@
 {
   "files.associations": {
     "atomic": "c",
-    "cstdint": "c"
+    "cstdint": "c",
+    "mgos.h": "c"
   }
 }
