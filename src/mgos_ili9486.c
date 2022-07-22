@@ -96,6 +96,8 @@ bool mgos_mgos_ili9486_init(void) {
     mgos_gpio_write(mgos_sys_config_get_ili9486_rst_pin(), 1);
   }
 
+  // TODO: add backlight control
+
   ili9486_send_commands(initialization_sequence);
 
   return true;
